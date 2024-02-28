@@ -3,21 +3,16 @@ const ApiError = require('../error/ApiError')
 
 class TaskController {
     async create(req, res) {
-        const {title, timeStart, timeEnd} = req.body
-        // const task = await TypeError.create({name})
-        // return res.json(task)
-        // let fileName
+        const {title, timeEnd} = req.body
+        
+        const task = await Task.create({title, timeEnd})
+        return res.json(task)
 
     }
 
     async getAll(req, res) {
-        const tasks = await Task.findAll()
-        return res.json(tasks)   
-    }
-
-    // async delete(req, res) {
         
-    // }
+    }
 }
 
 module.exports = new TaskController()

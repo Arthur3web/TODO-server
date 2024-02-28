@@ -10,12 +10,12 @@ const User = sequelize.define( 'user', {
 
 const Task = sequelize.define( 'Task', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    title: {type: DataTypes.STRING, unique: true},
-    timeStart: {type: DataTypes.DATE, allowNull: false},
+    title: {type: DataTypes.STRING, unique: true, allowNull: false},
+    timeStart: {type: DataTypes.DATE, defaultValue: Date.now()},
     timeEnd: {type: DataTypes.DATE, allowNull: false}
 })
 
-User.hasOne(Task)
+User.hasMany(Task)
 Task.belongsTo(User)
 
 module.exports = {
