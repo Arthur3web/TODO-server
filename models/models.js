@@ -5,14 +5,14 @@ const User = sequelize.define( 'user', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     email: {type: DataTypes.STRING, unique: true},
     password: {type: DataTypes.STRING},
-    role: {type: DataTypes.STRING, defaultValue: "ADMIN"},
 })
 
-const Task = sequelize.define( 'Task', {
+const Task = sequelize.define( 'task', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    title: {type: DataTypes.STRING, unique: true, allowNull: false},
-    timeStart: {type: DataTypes.DATE, defaultValue: Date.now()},
-    timeEnd: {type: DataTypes.DATE, allowNull: false}
+    title: {type: DataTypes.STRING, allowNull: false},
+    timeStart: {type: DataTypes.DATE, defaultValue: Date.now(new Date)},
+    timeEnd: {type: DataTypes.DATE, defaultValue: Date.now(new Date), allowNull: false},
+    isCompleted: {type: DataTypes.BOOLEAN, defaultValue: false}
 })
 
 User.hasMany(Task)
