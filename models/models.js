@@ -11,7 +11,7 @@ const Task = sequelize.define( 'task', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
     timeStart: {type: DataTypes.DATE, defaultValue: Date.now(new Date)},
-    timeEnd: {type: DataTypes.DATE, defaultValue: Date.now(new Date), allowNull: false},
+    timeEnd: {type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW, allowNull: false},
     isCompleted: {type: DataTypes.BOOLEAN, defaultValue: false}
 })
 
