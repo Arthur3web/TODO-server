@@ -10,7 +10,7 @@ const User = sequelize.define( 'user', {
 const Task = sequelize.define( 'task', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
-    timeStart: {type: DataTypes.DATE, defaultValue: Date.now(new Date)},
+    timeStart: {type: DataTypes.DATE, defaultValue: DataTypes.NOW/*defaultValue: Date.now(new Date)*/},
     timeEnd: {type: DataTypes.DATE, allowNull: false},
     isCompleted: {type: DataTypes.BOOLEAN, defaultValue: false}
 })

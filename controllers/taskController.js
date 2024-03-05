@@ -1,5 +1,6 @@
 const { Task } = require("../models/models");
 const ApiError = require("../error/ApiError");
+const { Op } = require("sequelize");
 
 class TaskController {
   async create(req, res, next) {
@@ -7,12 +8,15 @@ class TaskController {
     const { id } = req.user;
     const userId = id;
     if (!title || !timeEnd) {
-      return next(ApiError.internal('Отсутсвует содержимое задачи или время выполнения'))
-  }
+      return next(
+        ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
+      );
+    }
     const task = await Task.create(
       { title, timeEnd, userId, isCompleted },
       { where: { id } }
     );
+    console.log(timeEnd);
     return res.json(task);
   }
 
@@ -42,8 +46,11 @@ class TaskController {
   }
 
   async getAll(req, res) {
-    // const isToday = require('is-today');
-    const dateNow = Date.now();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Устанавливаем время на начало сегодняшнего дня
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // Дата начала завтрашнего дня
+
     const { id } = req.user;
     const { filterBy, selectedStatus } = req.query;
     const { where, order } = {
@@ -52,18 +59,27 @@ class TaskController {
           ? selectedStatus === "Done"
             ? {
                 userId: id,
-                timeEnd: dateNow,
+                timeEnd: {
+                  [Op.gte]: today, // Фильтрация по дате больше или равно началу сегодняшнего дня
+                  [Op.lt]: tomorrow, // Фильтрация по дате меньше завтрашнего дня
+                },
                 isCompleted: true,
               }
             : selectedStatus === "Undone"
             ? {
                 userId: id,
-                timeEnd: dateNow,
+                timeEnd: {
+                  [Op.gte]: today,
+                  [Op.lt]: tomorrow,
+                },
                 isCompleted: false,
               }
             : {
                 userId: id,
-                timeEnd: dateNow,
+                timeEnd: {
+                  [Op.gte]: today,
+                  [Op.lt]: tomorrow,
+                },
               }
           : filterBy === "All"
           ? selectedStatus === "Done"
@@ -81,7 +97,10 @@ class TaskController {
               }
           : {
               userId: id,
-              // timeEnd: dateNow,
+              timeEnd: {
+                [Op.gte]: today,
+                [Op.lt]: tomorrow,
+              },
             },
       order: [filterBy === "Date" ? ["timeEnd", "ASC"] : ["timeStart", "DESC"]],
     };
@@ -89,9 +108,49 @@ class TaskController {
       where,
       order,
     });
-
+    console.log(tasks);
     return res.json({ tasks });
   }
 }
 
 module.exports = new TaskController();
+
+// if (filterBy === "Date") {
+//   if (filterBy === "Today" || filterBy === "All") {
+//     if (selectedStatus === "All" || selectedStatus === "Done" || selectedStatus === "Undone") {
+//       // Сортировка по полю timeEnd в порядке возрастания
+//       order = [["timeEnd", "ASC"]];
+//     } else {
+//       // Сортировка по полю timeStart в порядке убывания
+//       order = [["timeStart", "DESC"]];
+//     }
+//   } else {
+//     // Сортировка по полю timeStart в порядке убывания
+//     order = [["timeStart", "DESC"]];
+//   }
+// } else {
+//   // Сортировка по полю timeStart в порядке убывания
+//   order = [["timeStart", "DESC"]];
+// }
+
+// filterBy === "Date"
+//   ? filterBy === "Today" || filterBy === "All"
+//     ? selectedStatus === "All" ||
+//       selectedStatus === "Done" ||
+//       selectedStatus === "Undone"
+//       ? {
+//           // Сортировка по полю timeEnd в порядке возрастания
+//           order: [["timeEnd", "ASC"]],
+//         }
+//       : {
+//           // Сортировка по полю timeStart в порядке убывания
+//           order: [["timeStart", "DESC"]],
+//         }
+//     : {
+//         // Сортировка по полю timeStart в порядке убывания
+//         order: [["timeStart", "DESC"]],
+//       }
+//   : {
+//       // Сортировка по полю timeStart в порядке убывания
+//       order: [["timeStart", "DESC"]],
+//     };
