@@ -20,11 +20,13 @@
     "jsonwebtoken": "^9.0.2",
     "mobx": "^6.12.0",
     "mobx-react-lite": "^4.0.5",
+    "moment-timezone": "^0.5.45",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "react-router-dom": "^6.22.2",
     "sequelize": "^6.37.1",
     "time-stamp": "^2.2.0",
+    "user-timezone": "^1.0.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

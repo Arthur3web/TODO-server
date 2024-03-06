@@ -1,6 +1,7 @@
 const { Task } = require("../models/models");
 const ApiError = require("../error/ApiError");
 const { Op } = require("sequelize");
+const moment = require("moment-timezone");
 
 class TaskController {
   async create(req, res, next) {
@@ -12,6 +13,17 @@ class TaskController {
         ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
       );
     }
+
+    // const timeEndUTC = moment.utc(timeEnd); // Convert timeEnd to UTC
+    // const timeEndUTC = moment.utc(timeEnd).add(3, 'hours'); 
+
+    // // Конвертировать timeEnd обратно в часовой пояс пользователя
+    // const userTimeZone = req.user.timezone; // Предположим, что пользователь имеет свой часовой пояс
+    // const timeEndUserTZ = moment(task.timeEnd).tz(userTimeZone).format(); // Конвертировать в часовой пояс пользователя
+
+    // task.timeEnd = timeEndUserTZ; // Обновить задачу с временем в часовом поясе пользователя
+
+
     const task = await Task.create(
       { title, timeEnd, userId, isCompleted },
       { where: { id } }
@@ -46,13 +58,24 @@ class TaskController {
   }
 
   async getAll(req, res) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Устанавливаем время на начало сегодняшнего дня
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1); // Дата начала завтрашнего дня
+    // const today = new Date();
+    // today.setHours(0, 0, 0, 0); // Устанавливаем время на начало сегодняшнего дня
+    // const endOfDay = new Date(today);
+    // endOfDay.setHours(23, 59, 59, 999); // Устанавливаем время на конец сегодняшнего дня
+    // const tomorrow = new Date(today);
+    // tomorrow.setDate(today.getDate() + 1); // Дата начала завтрашнего дня
+
+    // const today = moment.tz("Europe/Moscow").startOf("day");
+    // const endOfDay = moment.tz("Europe/Moscow").endOf("day");
+
+    const userTimezone = req.user.timezone || "UTC";
+    const today = moment.tz(moment(), userTimezone).startOf("day");
+    const endOfDay = moment.tz(moment(), userTimezone).endOf("day");
+
+    // const timezoneOffset = moment().tz(userTimezone).utcOffset();
 
     const { id } = req.user;
-    const { filterBy, selectedStatus } = req.query;
+    const { filterBy, selectedStatus, sortBy } = req.query;
     const { where, order } = {
       where:
         filterBy === "Today"
@@ -60,8 +83,8 @@ class TaskController {
             ? {
                 userId: id,
                 timeEnd: {
-                  [Op.gte]: today, // Фильтрация по дате больше или равно началу сегодняшнего дня
-                  [Op.lt]: tomorrow, // Фильтрация по дате меньше завтрашнего дня
+                  [Op.gte]: today,
+                  [Op.lt]: endOfDay,
                 },
                 isCompleted: true,
               }
@@ -70,7 +93,7 @@ class TaskController {
                 userId: id,
                 timeEnd: {
                   [Op.gte]: today,
-                  [Op.lt]: tomorrow,
+                  [Op.lt]: endOfDay,
                 },
                 isCompleted: false,
               }
@@ -78,7 +101,7 @@ class TaskController {
                 userId: id,
                 timeEnd: {
                   [Op.gte]: today,
-                  [Op.lt]: tomorrow,
+                  [Op.lt]: endOfDay,
                 },
               }
           : filterBy === "All"
@@ -95,15 +118,41 @@ class TaskController {
             : {
                 userId: id,
               }
+          : sortBy === "Date" && filterBy === "All"
+          ? {
+              userId: id,
+            }
+          : sortBy === "Date" &&
+            selectedStatus === "Undone" &&
+            filterBy === "All"
+          ? {
+              userId: id,
+              isCompleted: false,
+            }
+          : sortBy === "Date" && selectedStatus === "Done" && filterBy === "All"
+          ? {
+              userId: id,
+              isCompleted: true,
+            }
+          : sortBy === "Date" && filterBy === "Today"
+          ? {
+              userId: id,
+              timeEnd: {
+                [Op.gte]: today,
+                [Op.lt]: endOfDay,
+              },
+            }
           : {
               userId: id,
               timeEnd: {
                 [Op.gte]: today,
-                [Op.lt]: tomorrow,
+                [Op.lt]: endOfDay,
               },
             },
-      order: [filterBy === "Date" ? ["timeEnd", "ASC"] : ["timeStart", "DESC"]],
+
+      order: [sortBy === "Date" ? ["timeEnd", "ASC"] : ["timeStart", "DESC"]],
     };
+
     const tasks = await Task.findAll({
       where,
       order,
@@ -114,43 +163,3 @@ class TaskController {
 }
 
 module.exports = new TaskController();
-
-// if (filterBy === "Date") {
-//   if (filterBy === "Today" || filterBy === "All") {
-//     if (selectedStatus === "All" || selectedStatus === "Done" || selectedStatus === "Undone") {
-//       // Сортировка по полю timeEnd в порядке возрастания
-//       order = [["timeEnd", "ASC"]];
-//     } else {
-//       // Сортировка по полю timeStart в порядке убывания
-//       order = [["timeStart", "DESC"]];
-//     }
-//   } else {
-//     // Сортировка по полю timeStart в порядке убывания
-//     order = [["timeStart", "DESC"]];
-//   }
-// } else {
-//   // Сортировка по полю timeStart в порядке убывания
-//   order = [["timeStart", "DESC"]];
-// }
-
-// filterBy === "Date"
-//   ? filterBy === "Today" || filterBy === "All"
-//     ? selectedStatus === "All" ||
-//       selectedStatus === "Done" ||
-//       selectedStatus === "Undone"
-//       ? {
-//           // Сортировка по полю timeEnd в порядке возрастания
-//           order: [["timeEnd", "ASC"]],
-//         }
-//       : {
-//           // Сортировка по полю timeStart в порядке убывания
-//           order: [["timeStart", "DESC"]],
-//         }
-//     : {
-//         // Сортировка по полю timeStart в порядке убывания
-//         order: [["timeStart", "DESC"]],
-//       }
-//   : {
-//       // Сортировка по полю timeStart в порядке убывания
-//       order: [["timeStart", "DESC"]],
-//     };
