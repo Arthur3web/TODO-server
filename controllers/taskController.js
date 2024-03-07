@@ -5,31 +5,34 @@ const moment = require("moment-timezone");
 
 class TaskController {
   async create(req, res, next) {
-    const { title, timeEnd, isCompleted } = req.body;
-    const { id } = req.user;
-    const userId = id;
-    if (!title || !timeEnd) {
-      return next(
-        ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
+    try {
+      const { title, timeEnd, isCompleted } = req.body;
+      const { id } = req.user;
+      const userId = id;
+      if (!title || !timeEnd) {
+        return next(
+          ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
+        );
+      }
+
+      // // Создание момента с учетом временной зоны пользователя
+      // const userTimezone = req.user.timezone;
+      // const taskTime = moment.tz(timeEnd, userTimezone);
+      // // Конвертация времени в UTC
+      // const taskTimeUTC = taskTime.utc().format();
+
+      const timeEndUTC = moment.utc(timeEnd); // Convert timeEnd to UTC
+
+      const task = await Task.create(
+        { title, timeEnd: timeEndUTC, userId, isCompleted },
+        { where: { id } }
       );
+      console.log(timeEnd);
+      // console.log(timeEndUTC);
+      return res.json(task);
+    } catch (error) {
+      return next(ApiError.internal("Ошибка при создании задачи. Проверьте введенные данные"));
     }
-
-    // const timeEndUTC = moment.utc(timeEnd); // Convert timeEnd to UTC
-    // const timeEndUTC = moment.utc(timeEnd).add(3, 'hours'); 
-
-    // // Конвертировать timeEnd обратно в часовой пояс пользователя
-    // const userTimeZone = req.user.timezone; // Предположим, что пользователь имеет свой часовой пояс
-    // const timeEndUserTZ = moment(task.timeEnd).tz(userTimeZone).format(); // Конвертировать в часовой пояс пользователя
-
-    // task.timeEnd = timeEndUserTZ; // Обновить задачу с временем в часовом поясе пользователя
-
-
-    const task = await Task.create(
-      { title, timeEnd, userId, isCompleted },
-      { where: { id } }
-    );
-    console.log(timeEnd);
-    return res.json(task);
   }
 
   async put(req, res, next) {
@@ -58,21 +61,15 @@ class TaskController {
   }
 
   async getAll(req, res) {
-    // const today = new Date();
-    // today.setHours(0, 0, 0, 0); // Устанавливаем время на начало сегодняшнего дня
-    // const endOfDay = new Date(today);
-    // endOfDay.setHours(23, 59, 59, 999); // Устанавливаем время на конец сегодняшнего дня
-    // const tomorrow = new Date(today);
-    // tomorrow.setDate(today.getDate() + 1); // Дата начала завтрашнего дня
+    // // Конвертировать timeEnd обратно в часовой пояс пользователя
+    // const userTimeZone = req.user.timezone; // Предположим, что пользователь имеет свой часовой пояс
+    // const timeEndUserTZ = moment(task.timeEnd).tz(userTimeZone).format(); // Конвертировать в часовой пояс пользователя
 
-    // const today = moment.tz("Europe/Moscow").startOf("day");
-    // const endOfDay = moment.tz("Europe/Moscow").endOf("day");
+    // task.timeEnd = timeEndUserTZ; // Обновить задачу с временем в часовом поясе пользователя
 
-    const userTimezone = req.user.timezone || "UTC";
+    const userTimezone = /*req.user.timezone ||*/ "UTC";
     const today = moment.tz(moment(), userTimezone).startOf("day");
     const endOfDay = moment.tz(moment(), userTimezone).endOf("day");
-
-    // const timezoneOffset = moment().tz(userTimezone).utcOffset();
 
     const { id } = req.user;
     const { filterBy, selectedStatus, sortBy } = req.query;
@@ -157,6 +154,7 @@ class TaskController {
       where,
       order,
     });
+    console.log(userTimezone);
     console.log(tasks);
     return res.json({ tasks });
   }

@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "user",
+    "database": "local_db_migration",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "user",
+    "database": "test_db_migration",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "user",
+    "database": "production_db_migration",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
