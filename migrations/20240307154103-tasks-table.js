@@ -7,17 +7,20 @@ module.exports = {
       CREATE TABLE tasks (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
-        timeStart TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        timeEnd TIMESTAMP NOT NULL,
-        isCompleted BOOLEAN DEFAULT false
+        time_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        time_end TIMESTAMP NOT NULL,
+        is_completed BOOLEAN DEFAULT false,
+        user_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
       );
       `)
   },
 
   async down (queryInterface, Sequelize) {
-    // await queryInterface.dropTable('tasks');
     return queryInterface.sequelize.query(`
-      DROP TABLE users;
+      DROP TABLE tasks;
     `);
   }
 };

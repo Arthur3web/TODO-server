@@ -7,6 +7,16 @@ const User = sequelize.define("user", {
   email: { type: DataTypes.STRING, unique: true },
   password: { type: DataTypes.STRING },
   timezone: { type: DataTypes.STRING, allowNull: false },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
 });
 
 const Task = sequelize.define(
@@ -14,21 +24,39 @@ const Task = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
-    timeStart: {
+    time_start: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW /*defaultValue: Date.now(new Date)*/,
+      defaultValue: DataTypes.NOW,
     },
-    timeEnd: { type: DataTypes.DATE, allowNull: false },
-    isCompleted: { type: DataTypes.BOOLEAN, defaultValue: false },
+    time_end: { type: DataTypes.DATE, allowNull: false },
+    is_completed: { type: DataTypes.BOOLEAN, defaultValue: false },
+    user_id: {type: DataTypes.INTEGER, primaryKey: true, allowNull: false},
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: false,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: false,
+    },
   },
   {
-    timestamps: false, // Отключение временных меток, если не нужны
-    // timezone: "Etc/UTC", // Указание временной зоны (может повлиять на сохранение времени в базе данных)
+    timestamps: false,
+    // hooks: {
+    //   beforeUpdate: (task, options) => {
+    //     // Обновляем поле updatedAt перед обновлением записи
+    //     task.updated_at = new Date();
+    //   },
+    // },
   }
 );
 
-User.hasMany(Task);
-Task.belongsTo(User);
+
+//определение ассоциации к пользовательской модели
+User.hasMany(Task, { foreignKey: "user_id" });
+Task.belongsTo(User, { foreignKey: "user_id" });
 
 module.exports = {
   User,

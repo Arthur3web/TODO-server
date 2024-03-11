@@ -6,10 +6,10 @@ const moment = require("moment-timezone");
 class TaskController {
   async create(req, res, next) {
     try {
-      const { title, timeEnd, isCompleted } = req.body;
+      const { title, time_end, is_completed } = req.body;
       const { id } = req.user;
-      const userId = id;
-      if (!title || !timeEnd) {
+      // const userId = id;
+      if (!title || !time_end) {
         return next(
           ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
         );
@@ -21,17 +21,27 @@ class TaskController {
       // // Конвертация времени в UTC
       // const taskTimeUTC = taskTime.utc().format();
 
-      const timeEndUTC = moment.utc(timeEnd); // Convert timeEnd to UTC
+      const timeEndUTC = moment.utc(time_end); // Convert timeEnd to UTC
+      // try {
+        const task = await Task.create(
+          { title, time_end: timeEndUTC, user_id: id, is_completed }
+          // { where: { id } }
+        );
+      // } catch (err) {
+      //   console.log("AZAAAZAZAZ", err);
+      // }
 
-      const task = await Task.create(
-        { title, timeEnd: timeEndUTC, userId, isCompleted },
-        { where: { id } }
-      );
-      console.log(timeEnd);
+
+      // console.log(timeEnd);
       // console.log(timeEndUTC);
       return res.json(task);
     } catch (error) {
-      return next(ApiError.internal("Ошибка при создании задачи. Проверьте введенные данные"));
+      console.log("!!!!!!!!!!!!!!!!!!!", error);
+      return next(
+        ApiError.internal(
+          "Ошибка при создании задачи. Проверьте введенные данные"
+        )
+      );
     }
   }
 
@@ -40,7 +50,7 @@ class TaskController {
     const task = await Task.findOne({ where: { id } });
     if (!task) {
       return next(ApiError.internal("Задача не существует"));
-    } else if (task.userId !== req.user.id) {
+    } else if (task.user_id !== req.user.id) {
       return next(ApiError.internal("Редактирование запрещено!"));
     }
     const newTask = req.body;
@@ -53,7 +63,7 @@ class TaskController {
     const task = await Task.findOne({ where: { id } });
     if (!task) {
       return next(ApiError.internal("Задача не существует"));
-    } else if (task.userId !== req.user.id) {
+    } else if (task.user_id !== req.user.id) {
       return next(ApiError.internal("Удаление запрещено!"));
     }
     const taskNew = await Task.destroy({ where: { id } });
@@ -78,25 +88,25 @@ class TaskController {
         filterBy === "Today"
           ? selectedStatus === "Done"
             ? {
-                userId: id,
-                timeEnd: {
+                user_id: id,
+                time_end: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
-                isCompleted: true,
+                is_completed: true,
               }
             : selectedStatus === "Undone"
             ? {
-                userId: id,
-                timeEnd: {
+                user_id: id,
+                time_end: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
-                isCompleted: false,
+                is_completed: false,
               }
             : {
-                userId: id,
-                timeEnd: {
+                user_id: id,
+                time_end: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
@@ -104,50 +114,50 @@ class TaskController {
           : filterBy === "All"
           ? selectedStatus === "Done"
             ? {
-                userId: id,
-                isCompleted: true,
+                user_id: id,
+                is_completed: true,
               }
             : selectedStatus === "Undone"
             ? {
-                userId: id,
-                isCompleted: false,
+                user_id: id,
+                is_completed: false,
               }
             : {
-                userId: id,
+                user_id: id,
               }
           : sortBy === "Date" && filterBy === "All"
           ? {
-              userId: id,
+              user_id: id,
             }
           : sortBy === "Date" &&
             selectedStatus === "Undone" &&
             filterBy === "All"
           ? {
-              userId: id,
-              isCompleted: false,
+              user_id: id,
+              is_completed: false,
             }
           : sortBy === "Date" && selectedStatus === "Done" && filterBy === "All"
           ? {
-              userId: id,
-              isCompleted: true,
+              user_id: id,
+              is_completed: true,
             }
           : sortBy === "Date" && filterBy === "Today"
           ? {
-              userId: id,
-              timeEnd: {
+              user_id: id,
+              time_end: {
                 [Op.gte]: today,
                 [Op.lt]: endOfDay,
               },
             }
           : {
-              userId: id,
-              timeEnd: {
+              user_id: id,
+              time_end: {
                 [Op.gte]: today,
                 [Op.lt]: endOfDay,
               },
             },
 
-      order: [sortBy === "Date" ? ["timeEnd", "ASC"] : ["timeStart", "DESC"]],
+      order: [sortBy === "Date" ? ["time_end", "ASC"] : ["time_start", "DESC"]],
     };
 
     const tasks = await Task.findAll({
