@@ -22,21 +22,16 @@ class TaskController {
       // const taskTimeUTC = taskTime.utc().format();
 
       const timeEndUTC = moment.utc(time_end); // Convert timeEnd to UTC
-      // try {
-        const task = await Task.create(
-          { title, time_end: timeEndUTC, user_id: id, is_completed }
-          // { where: { id } }
-        );
-      // } catch (err) {
-      //   console.log("AZAAAZAZAZ", err);
-      // }
+      const task = await Task.create({
+        title,
+        time_end: timeEndUTC,
+        user_id: id,
+        is_completed,
+        updated_at: Date.now(),
+      });
 
-
-      // console.log(timeEnd);
-      // console.log(timeEndUTC);
       return res.json(task);
     } catch (error) {
-      console.log("!!!!!!!!!!!!!!!!!!!", error);
       return next(
         ApiError.internal(
           "Ошибка при создании задачи. Проверьте введенные данные"
@@ -54,8 +49,19 @@ class TaskController {
       return next(ApiError.internal("Редактирование запрещено!"));
     }
     const newTask = req.body;
-    const taskNew = await Task.update(newTask, { where: { id } });
-    return res.json(taskNew);
+    // Вручную устанавливаем значение updated_at
+    newTask.updated_at = new Date();
+    // Вызываем метод update
+    const [updatedRowsCount, [updatedTask]] = await Task.update(newTask, {
+      where: { id },
+      returning: true, // Включаем возврат обновленной записи
+    });
+
+    if (updatedRowsCount === 0) {
+      return next(ApiError.internal("Не удалось обновить задачу"));
+    }
+
+    return res.json(updatedTask);
   }
 
   async delete(req, res, next) {
@@ -77,7 +83,7 @@ class TaskController {
 
     // task.timeEnd = timeEndUserTZ; // Обновить задачу с временем в часовом поясе пользователя
 
-    const userTimezone = /*req.user.timezone ||*/ "UTC";
+    const userTimezone = /*req.user.timezone ||*/ /*"Europe/Berlin" ||*/ "UTC";
     const today = moment.tz(moment(), userTimezone).startOf("day");
     const endOfDay = moment.tz(moment(), userTimezone).endOf("day");
 

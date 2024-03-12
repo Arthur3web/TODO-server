@@ -38,18 +38,12 @@ const Task = sequelize.define(
     },
     updated_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      // defaultValue: DataTypes.NOW,
       allowNull: false,
     },
   },
   {
     timestamps: false,
-    // hooks: {
-    //   beforeUpdate: (task, options) => {
-    //     // Обновляем поле updatedAt перед обновлением записи
-    //     task.updated_at = new Date();
-    //   },
-    // },
   }
 );
 
