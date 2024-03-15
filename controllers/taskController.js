@@ -6,7 +6,7 @@ const moment = require("moment-timezone");
 class TaskController {
   async create(req, res, next) {
     try {
-      const { title, time_end, is_completed } = req.body;
+      const { title, time_end } = req.body;
       const { id } = req.user;
       // const userId = id;
       if (!title || !time_end) {
@@ -26,7 +26,6 @@ class TaskController {
         title,
         time_end: timeEndUTC,
         user_id: id,
-        is_completed,
         updated_at: Date.now(),
       });
 

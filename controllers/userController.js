@@ -10,10 +10,13 @@ const generateJwt = (id, email, timezone) => {
         {expiresIn: '24h'}
     )
 }
-
+const getUserTimeZone = () => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone; // метод позволяет получить текущий часовой пояс браузера пользователя
+  };
 class UserController {
     async registration(req, res, next) {
-        const {email, password, timezone} = req. body
+        const userTimeZone = getUserTimeZone(); // возвращает текущий часовой пояс пользователя
+        const {email, password} = req. body
         if (!email || !password) {
             return next(ApiError.badRequest('Некорректный email или password'))
         }
@@ -22,7 +25,7 @@ class UserController {
             return next(ApiError.badRequest('Пользователь с таким email уже существует'))
         }
         const hashPasswod = await bcrypt.hash(password, 5)
-        const user = await User.create({email, password: hashPasswod, timezone})
+        const user = await User.create({email, password: hashPasswod, timezone: userTimeZone})
         const token = generateJwt(user.id, user.email, user.timezone)
         // console.log(user.timezone)
         return res.json({token})
