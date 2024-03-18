@@ -24,12 +24,12 @@ const Task = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
-    time_start: {
+    timestart: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    time_end: { type: DataTypes.DATE, allowNull: false },
-    is_completed: { type: DataTypes.BOOLEAN, defaultValue: false },
+    timeend: { type: DataTypes.DATE, allowNull: false },
+    iscompleted: { type: DataTypes.BOOLEAN, defaultValue: false },
     user_id: {type: DataTypes.INTEGER, primaryKey: true, allowNull: false},
     created_at: {
       type: DataTypes.DATE,

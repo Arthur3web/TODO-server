@@ -6,25 +6,19 @@ const moment = require("moment-timezone");
 class TaskController {
   async create(req, res, next) {
     try {
-      const { title, time_end } = req.body;
+      const { title, timeend } = req.body;
       const { id } = req.user;
       // const userId = id;
-      if (!title || !time_end) {
+      if (!title || !timeend) {
         return next(
           ApiError.internal("Отсутсвует содержимое задачи или время выполнения")
         );
       }
 
-      // // Создание момента с учетом временной зоны пользователя
-      // const userTimezone = req.user.timezone;
-      // const taskTime = moment.tz(timeEnd, userTimezone);
-      // // Конвертация времени в UTC
-      // const taskTimeUTC = taskTime.utc().format();
-
-      const timeEndUTC = moment.utc(time_end); // Convert timeEnd to UTC
+      const timeEndUTC = moment.utc(timeend); // Convert timeEnd to UTC
       const task = await Task.create({
         title,
-        time_end: timeEndUTC,
+        timeend: timeEndUTC,
         user_id: id,
         updated_at: Date.now(),
       });
@@ -59,7 +53,6 @@ class TaskController {
     if (updatedRowsCount === 0) {
       return next(ApiError.internal("Не удалось обновить задачу"));
     }
-
     return res.json(updatedTask);
   }
 
@@ -76,13 +69,7 @@ class TaskController {
   }
 
   async getAll(req, res) {
-    // // Конвертировать timeEnd обратно в часовой пояс пользователя
-    // const userTimeZone = req.user.timezone; // Предположим, что пользователь имеет свой часовой пояс
-    // const timeEndUserTZ = moment(task.timeEnd).tz(userTimeZone).format(); // Конвертировать в часовой пояс пользователя
-
-    // task.timeEnd = timeEndUserTZ; // Обновить задачу с временем в часовом поясе пользователя
-
-    const userTimezone = /*req.user.timezone ||*/ /*"Europe/Berlin" ||*/ "UTC";
+    const userTimezone = req.user.timezone || "UTC";
     const today = moment.tz(moment(), userTimezone).startOf("day");
     const endOfDay = moment.tz(moment(), userTimezone).endOf("day");
 
@@ -94,24 +81,24 @@ class TaskController {
           ? selectedStatus === "Done"
             ? {
                 user_id: id,
-                time_end: {
+                timeend: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
-                is_completed: true,
+                iscompleted: true,
               }
             : selectedStatus === "Undone"
             ? {
                 user_id: id,
-                time_end: {
+                timeend: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
-                is_completed: false,
+                iscompleted: false,
               }
             : {
                 user_id: id,
-                time_end: {
+                timeend: {
                   [Op.gte]: today,
                   [Op.lt]: endOfDay,
                 },
@@ -120,12 +107,12 @@ class TaskController {
           ? selectedStatus === "Done"
             ? {
                 user_id: id,
-                is_completed: true,
+                iscompleted: true,
               }
             : selectedStatus === "Undone"
             ? {
                 user_id: id,
-                is_completed: false,
+                iscompleted: false,
               }
             : {
                 user_id: id,
@@ -139,30 +126,30 @@ class TaskController {
             filterBy === "All"
           ? {
               user_id: id,
-              is_completed: false,
+              iscompleted: false,
             }
           : sortBy === "Date" && selectedStatus === "Done" && filterBy === "All"
           ? {
               user_id: id,
-              is_completed: true,
+              iscompleted: true,
             }
           : sortBy === "Date" && filterBy === "Today"
           ? {
               user_id: id,
-              time_end: {
+              timeend: {
                 [Op.gte]: today,
                 [Op.lt]: endOfDay,
               },
             }
           : {
               user_id: id,
-              time_end: {
+              timeend: {
                 [Op.gte]: today,
                 [Op.lt]: endOfDay,
               },
             },
 
-      order: [sortBy === "Date" ? ["time_end", "ASC"] : ["time_start", "DESC"]],
+      order: [sortBy === "Date" ? ["timeend", "ASC"] : ["timestart", "DESC"]],
     };
 
     const tasks = await Task.findAll({

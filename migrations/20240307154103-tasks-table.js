@@ -7,9 +7,9 @@ module.exports = {
       CREATE TABLE tasks (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
-        time_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        time_end TIMESTAMP NOT NULL,
-        is_completed BOOLEAN DEFAULT false,
+        timestart TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        timeend TIMESTAMP NOT NULL,
+        iscompleted BOOLEAN DEFAULT false,
         user_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

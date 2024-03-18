@@ -13,11 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.18.2",
+    "express": "^4.18.3",
+    "express-fileupload": "^1.5.0",
     "is-today": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
     "mobx": "^6.12.0",
@@ -27,6 +29,7 @@
     "pg-hstore": "^2.3.4",
     "react-router-dom": "^6.22.2",
     "sequelize": "^6.37.1",
+    "sqlite3": "^5.1.7",
     "time-stamp": "^2.2.0",
     "user-timezone": "^1.0.3",
     "uuid": "^9.0.1"
