@@ -9,6 +9,7 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      username: { type: Sequelize.DataTypes.STRING, allowNull: false },
       email: { type: Sequelize.DataTypes.STRING, unique: true },
       password: { type: Sequelize.DataTypes.STRING },
       timezone: { type: Sequelize.DataTypes.STRING, allowNull: false },
