@@ -42,17 +42,18 @@ class TaskController {
       return next(ApiError.internal("Редактирование запрещено!"));
     }
     const newTask = req.body;
-    // Вручную устанавливаем значение updated_at
     newTask.updated_at = new Date();
-    // Вызываем метод update
+    if ('title' in newTask && !newTask.title) {
+      return next(ApiError.internal("Поле title не может быть пустым"));
+    }
     const [updatedRowsCount, [updatedTask]] = await Task.update(newTask, {
       where: { id },
-      returning: true, // Включаем возврат обновленной записи
+      returning: true, 
     });
 
     if (updatedRowsCount === 0) {
       return next(ApiError.internal("Не удалось обновить задачу"));
-    }
+    } 
     return res.json(updatedTask);
   }
 
@@ -149,7 +150,7 @@ class TaskController {
               },
             },
 
-      order: [sortBy === "Date" ? ["timeend", "ASC"] : ["timestart", "DESC"]],
+      order: [sortBy === "Date" ? ["timestart", "DESC"] : ["timeend", "ASC"]],
     };
 
     const tasks = await Task.findAll({
