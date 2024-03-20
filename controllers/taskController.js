@@ -15,7 +15,10 @@ class TaskController {
         );
       }
 
-      const timeEndUTC = moment.utc(timeend); // Convert timeEnd to UTC
+      // const timeEndUTC = moment.utc(timeend); // Convert timeEnd to UTC
+      const userTimezone = req.user.timezone || "UTC";
+      const timeEndUTC = moment.tz(timeend, userTimezone).utc().format(); 
+
       const task = await Task.create({
         title,
         timeend: timeEndUTC,
