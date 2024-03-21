@@ -16,8 +16,10 @@ class TaskController {
       }
 
       // const timeEndUTC = moment.utc(timeend); // Convert timeEnd to UTC
+      const localTimezone = moment.tz.guess();
       const userTimezone = req.user.timezone || "UTC";
-      const timeEndUTC = moment.tz(timeend, userTimezone).utc().format(); 
+      const timezoneToUse = localTimezone !== userTimezone ? localTimezone : userTimezone;
+      const timeEndUTC = moment.tz(timeend, timezoneToUse).utc().format(); 
 
       const task = await Task.create({
         title,
@@ -73,9 +75,15 @@ class TaskController {
   }
 
   async getAll(req, res) {
-    const userTimezone = req.user.timezone || "UTC";
-    const today = moment.tz(moment(), userTimezone).startOf("day");
-    const endOfDay = moment.tz(moment(), userTimezone).endOf("day");
+    // const userTimezone = req.user.timezone || "UTC";
+    const localOffset = moment().utcOffset();
+    const todayStart = moment().startOf("day");
+    const todayEnd = moment().endOf("day");
+
+    // Удаление часового смещения из начала и конца дня
+    const today = todayStart.subtract(localOffset, 'minutes');
+    const endOfDay = todayEnd.subtract(localOffset, 'minutes');
+
 
     const { id } = req.user;
     const { filterBy, selectedStatus, sortBy } = req.query;
@@ -160,8 +168,8 @@ class TaskController {
       where,
       order,
     });
-    console.log(userTimezone);
-    console.log(tasks);
+    // console.log(userTimezone);
+    // console.log(tasks);
     return res.json({ tasks });
   }
 }
